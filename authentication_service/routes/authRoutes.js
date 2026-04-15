@@ -5,6 +5,4 @@ const authController = require("../controllers/authController");
 router.post("/signup", authController.signup);
 router.post("/login", authController.login);
 
-router.post("/seed", authController.seed);
-
 module.exports = router;
