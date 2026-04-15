@@ -1,0 +1,84 @@
+version: "3.8"
+
+services:
+    mongodb:
+        image: mongo:latest
+        container_name: ticket_mongo
+        ports:
+            - "27017:27017"
+        volumes:
+            - mongo_data:/data/db
+
+    postgres:
+        image: postgres:latest
+        container_name: ticket_postgres
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: ticket_booking
+        ports:
+            - "5432:5432"
+        volumes:
+            - pg_data:/var/lib/postgresql
+
+    api_gateway:
+        build: ./api_gateway
+        container_name: api_gateway
+        command: npm run dev
+        ports:
+            - "5000:5000"
+        env_file:
+            - ./api_gateway/.env
+        volumes:
+            - ./api_gateway:/app
+            - /app/node_modules
+        depends_on:
+            - authentication_service
+            - booking_service
+            - event_service
+
+    authentication_service:
+        build: ./authentication_service
+        container_name: authentication_service
+        command: npm run dev
+        ports:
+            - "5001:5001"
+        env_file:
+            - ./authentication_service/.env
+        volumes:
+            - ./authentication_service:/app
+            - /app/node_modules
+        depends_on:
+            - mongodb
+
+    booking_service:
+        build: ./booking_service
+        container_name: booking_service
+        command: npm run dev
+        ports:
+            - "5002:5002"
+        env_file:
+            - ./booking_service/.env
+        volumes:
+            - ./booking_service:/app
+            - /app/node_modules
+        depends_on:
+            - postgres
+
+    event_service:
+        build: ./event_service
+        container_name: event_service
+        command: npm run dev
+        ports:
+            - "5003:5003"
+        env_file:
+            - ./event_service/.env
+        volumes:
+            - ./event_service:/app
+            - /app/node_modules
+        depends_on:
+            - mongodb
+
+volumes:
+    mongo_data:
+    pg_data:
