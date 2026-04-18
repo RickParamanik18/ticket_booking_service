@@ -8,6 +8,7 @@ const EventSchema = new mongoose.Schema({
     start_time: String,
     end_time: String,
     seat_count: Number,
+    ticket_price: Number,
     booked_seats: [String],
 });
 

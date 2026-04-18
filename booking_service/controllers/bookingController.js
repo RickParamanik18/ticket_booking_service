@@ -1,4 +1,3 @@
-const { Ticket } = require("../models");
 const bookingService = require("../services/bookingService");
 
 exports.bookTickets = async (req, res) => {
@@ -20,9 +19,12 @@ exports.bookTickets = async (req, res) => {
             throw new Error(
                 "Someone else has initiated booking request for your selected seats..",
             );
-        res.status(201).json({ message: "Tickets booked successfully" });
+        res.status(201).json({
+            success: true,
+            message: "Tickets booked successfully",
+        });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ success: false, error: err.message });
     }
 };
 
