@@ -30,8 +30,9 @@ exports.bookTickets = async (req, res) => {
 
 exports.getTicketDetails = async (req, res) => {
     try {
-        const ticket = await Ticket.findByPk(req.params.ticket_id);
-        if (!ticket) return res.status(404).json({ error: "Ticket not found" });
+        const ticket = await bookingService.getTicketDetails(
+            req.params.user_id,
+        );
         res.json(ticket);
     } catch (err) {
         res.status(500).json({ error: err.message });

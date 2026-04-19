@@ -28,8 +28,8 @@ const kafkaListen = async () => {
     await consumer.run({
         eachMessage: async ({ topic, partition, message }) => {
             const parsedMsg = JSON.parse(message.value.toString());
-            const event_id = parsedMsg[0].event_id;
-            const seats = parsedMsg.map((msg) => msg.seat_id);
+            const event_id = parsedMsg.event_id;
+            const seats = JSON.parse(parsedMsg.seats);
             console.log({ event_id, seats });
             const result = await Event.findByIdAndUpdate(
                 event_id,

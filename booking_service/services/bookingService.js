@@ -76,12 +76,11 @@ const bookTickets = async (user_id, event_id, seats) => {
     });
 
     //DB Call - save to booking DB
-    const bookings = [];
-    for (const seat_id of seats) {
-        bookings.push({ user_id, event_id, seat_id });
-    }
-    let results = await Ticket.bulkCreate(bookings);
-    results = results.map((result) => result.dataValues);
+    let results = await Ticket.create({
+        user_id,
+        event_id,
+        seats: JSON.stringify(seats),
+    });
 
     console.log(results);
     console.log("checkpoint 1");
@@ -106,4 +105,48 @@ const bookTickets = async (user_id, event_id, seats) => {
     return true;
 };
 
-module.exports = { bookTickets };
+function mergeData(events, dbData) {
+    const eventMap = new Map(events.map((event) => [event._id, event]));
+
+    return dbData.map((booking) => {
+        const event = eventMap.get(booking.event_id);
+        return {
+            id: booking.id,
+            event_id: booking.event_id,
+            seats: JSON.parse(booking.seats),
+            event_name: event?.event_name,
+            event_date: event?.event_date,
+            start_time: event?.start_time,
+            end_time: event?.end_time,
+        };
+    });
+}
+
+const getTicketDetails = async (user_id) => {
+    let dbData = await Ticket.findAll({
+        where: {
+            user_id,
+        },
+    });
+    dbData = dbData.map((data) => data.dataValues);
+
+    const event_ids = [];
+    dbData.map((data) => {
+        if (!event_ids.includes(data.event_id)) event_ids.push(data.event_id);
+    });
+
+    const res = await fetch("http://event_service:5002/multiple_events", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            event_ids,
+        }),
+    });
+    const events = await res.json();
+
+    return mergeData(events, dbData);
+};
+
+module.exports = { bookTickets, getTicketDetails };

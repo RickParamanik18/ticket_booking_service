@@ -30,6 +30,14 @@ exports.getEventDetails = async (req, res) => {
     }
 };
 
+exports.getMultipleEvents = async (req, res) => {
+    const event_ids = req.body.event_ids;
+    const events = await Event.find({
+        _id: { $in: event_ids },
+    });
+    res.json(events);
+};
+
 exports.seedMockEvents = async (req, res) => {
     // 5 mock events with empty booked_seats
     const mockEvents = [
